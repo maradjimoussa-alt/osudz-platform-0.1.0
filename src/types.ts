@@ -23,6 +23,8 @@ export interface BeatmapComment {
   time: string;
   text: string;
   rating?: number;
+  /** Set when this comment is a reply — the id of the parent comment. */
+  parentId?: string;
 }
 
 export interface Beatmap {

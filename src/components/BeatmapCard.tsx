@@ -212,7 +212,7 @@ export const BeatmapCard: React.FC<BeatmapCardProps> = ({
         <div className="card-face bg-[#0f172a] border border-slate-700/80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:border-slate-500/90 transition-shadow duration-300 flex flex-col text-slate-100 group">
 
           {/* Star Rating Banner — fractional StarRow + 6-band colour scheme */}
-          <div className={`w-full py-1.5 px-3 flex items-center justify-between font-bold text-xs tracking-wider select-none flex-shrink-0 ${headerBgClass}`}>
+          <div className={`w-full py-1 px-3 flex items-center justify-between font-bold text-xs tracking-wider select-none flex-shrink-0 ${headerBgClass}`}>
             <StarRow rating={beatmap.stars} />
             <span className="font-mono font-black text-sm tracking-tight">{beatmap.stars.toFixed(2)}</span>
           </div>
@@ -545,135 +545,207 @@ export const BeatmapCard: React.FC<BeatmapCardProps> = ({
         </div>
 
         {/* ── BACK FACE ── */}
-        <div className="card-face card-face-back bg-[#0f172a] border border-slate-700/80 rounded-2xl overflow-hidden shadow-lg flex flex-col text-slate-100">
-          <div className={`w-full py-2 px-3 flex items-center justify-between font-bold text-xs tracking-wider select-none flex-shrink-0 ${headerBgClass}`}>
-            <span className="font-mono font-black">SUBMISSION DETAILS</span>
-            <Trophy className="w-4 h-4" />
+<div className="card-face card-face-back bg-[#0f172a] border border-slate-700/80 rounded-2xl overflow-hidden shadow-lg flex flex-col text-slate-100">
+
+  {/* Header */}
+  <div className={`w-full py-2 px-3 flex items-center justify-between font-bold text-xs tracking-wider select-none flex-shrink-0 ${headerBgClass}`}>
+    <span className="font-mono font-black">CHALLENGE REQUIREMENTS</span>
+    <Trophy className="w-4 h-4" />
+  </div>
+
+  {/* Map preview */}
+  <div className="relative h-20 overflow-hidden flex-shrink-0">
+    <img
+      src={beatmap.coverUrl}
+      alt=""
+      referrerPolicy="no-referrer"
+      className="w-full h-full object-cover opacity-40"
+    />
+
+    <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/95 via-[#0f172a]/70 to-[#0f172a]/95" />
+
+    <div className="absolute inset-0 px-3 py-2.5 flex flex-col justify-center gap-0.5">
+      <p className="text-sm font-black text-white line-clamp-2 leading-tight">
+        {beatmap.title}
+      </p>
+
+      <p className="text-[11px] text-slate-300 truncate">
+        {beatmap.artist}
+        <span className="text-slate-500"> · mapped by </span>
+        {beatmap.mapper}
+      </p>
+
+      <p className="text-[10px] text-amber-400 font-mono font-bold">
+        ★ {beatmap.stars.toFixed(2)} · {beatmap.difficultyName}
+      </p>
+    </div>
+  </div>
+
+  {/* Main content */}
+  <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+
+    <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">
+      Challenge requirement
+    </p>
+
+    {/* Challenge requirement card */}
+    {beatmap.challengeType ? (
+      <div className={`rounded-xl border p-3 ${challengeStyle.bg} ${challengeStyle.border}`}>
+
+        <div className="flex items-start gap-2.5">
+
+          {/* Icon */}
+          <div
+            className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${challengeStyle.badge} ${challengeStyle.text}`}
+          >
+            {challengeStyle.icon}
           </div>
 
-          <div className="relative h-16 overflow-hidden flex-shrink-0">
-            <img src={beatmap.coverUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/60 to-[#0f172a]" />
-            <div className="absolute inset-0 p-3 flex flex-col justify-center">
-              <p className="text-sm font-black text-white line-clamp-1">{beatmap.title}</p>
-              <p className="text-[11px] text-slate-400">{beatmap.artist} · mapped by {beatmap.mapper}</p>
-              <p className="text-[10px] text-amber-400 font-mono mt-0.5 font-bold">
-                ★ {beatmap.stars.toFixed(2)} · {beatmap.difficultyName}
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+
+            {/* Requirement + mod */}
+            <div className="flex items-center justify-between gap-2 mb-1">
+
+              <p className={`text-xs font-bold ${challengeStyle.text} leading-tight`}>
+                {beatmap.challengeType}
               </p>
-            </div>
-          </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
-            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">
-              Challenge requirements
-            </p>
+              {beatmap.modRequirement && (
+                <span
+                  className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md ${challengeStyle.badge} ${challengeStyle.text} flex-shrink-0`}
+                >
+                  {beatmap.modRequirement}
+                </span>
+              )}
 
-            {/* Styled challenge card — colour/icon/border driven by challenge type */}
-            {beatmap.challengeType ? (
-              <div className={`rounded-xl border p-3 ${challengeStyle.bg} ${challengeStyle.border}`}>
-                <div className="flex items-start gap-2.5">
-                  {/* Icon badge */}
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${challengeStyle.badge} ${challengeStyle.text}`}>
-                    {challengeStyle.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {/* Challenge type + mod requirement badge */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <p className={`text-xs font-bold leading-tight ${challengeStyle.text}`}>
-                        {beatmap.challengeType}
-                      </p>
-                      {beatmap.modRequirement && (
-                        <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md ${challengeStyle.badge} ${challengeStyle.text} flex-shrink-0`}>
-                          {beatmap.modRequirement}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* DZPP points breakdown */}
-                    <div className="mt-1.5 space-y-1">
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400">Mod compliance</span>
-                        <span className="font-mono font-bold text-slate-200">+{MOD_COMPLIANCE_POINTS} pts</span>
-                      </div>
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400">Requirement achievement</span>
-                        <span className="font-mono font-bold text-slate-200">+{REQUIREMENT_ACHIEVEMENT_POINTS} pts</span>
-                      </div>
-                      <div className={`flex items-center justify-between text-[10px] pt-1 border-t border-slate-700/60`}>
-                        <span className={`font-bold ${challengeStyle.text}`}>Max qualification</span>
-                        <span className={`font-mono font-black ${challengeStyle.text}`}>+{MOD_COMPLIANCE_POINTS + REQUIREMENT_ACHIEVEMENT_POINTS} pts</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Fallback when no challenge type is set yet */
-              <div className="bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2.5">
-                <span className="text-[11px] text-slate-600">No challenge type set</span>
-              </div>
-            )}
-
-            {/* Remaining submission metadata */}
-            <div className="bg-slate-900/70 border border-slate-800 rounded-xl divide-y divide-slate-800/60">
-              {[
-                { label: 'Submitted by', value: beatmap.submittedByName, mono: false },
-                { label: 'Map status', value: beatmap.status, mono: false },
-              ].map(({ label, value, mono }) => (
-                <div key={label} className="flex items-center justify-between gap-3 px-3 py-2.5">
-                  <span className="text-[11px] text-slate-500">{label}</span>
-                  <span
-                    className={`text-[11px] font-bold text-slate-100 text-right ${mono ? 'font-mono' : ''} ${
-                      value ? '' : 'text-slate-600'
-                    }`}
-                  >
-                    {value || '—'}
-                  </span>
-                </div>
-              ))}
             </div>
 
-            {beatmap.description && (
-              <p className="text-[11px] text-slate-400 leading-snug px-1">{beatmap.description}</p>
-            )}
-          </div>
+            {/* DZPP points */}
+            <div className="mt-2 space-y-1">
 
-          <div className="p-3 border-t border-slate-800 flex gap-2 flex-shrink-0">
-            {showVoteButton && (
-            <button
-              type="button"
-              disabled={voteBlocked}
-              title={voteTitle}
-              aria-label={voteTitle}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (voteBlocked) return;
-                triggerSpin(onVote);
-              }}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed ${
-                beatmap.isVoted ? 'bg-emerald-600 text-white' : 'bg-amber-400 hover:bg-amber-300 text-slate-950'
-              }`}
-            >
-              {voteBusy
-                ? 'Voting…'
-                : beatmap.isVoted
-                  ? <><CheckCircle2 className="w-3.5 h-3.5" /> Voted</>
-                  : 'Vote'}
-            </button>
-            )}
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); triggerSpin(onFavorite); }}
-              className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors ${
-                beatmap.isFavorited
-                  ? 'bg-rose-500/20 border-rose-500/60 text-rose-400'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-            >
-              <Heart className={`w-3.5 h-3.5 ${beatmap.isFavorited ? 'fill-rose-500' : ''}`} />
-            </button>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-400">
+                  Mod compliance
+                </span>
+
+                <span className="font-mono font-bold text-slate-200">
+                  +{MOD_COMPLIANCE_POINTS} pts
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-400">
+                  Requirement achievement
+                </span>
+
+                <span className="font-mono font-bold text-slate-200">
+                  +{REQUIREMENT_ACHIEVEMENT_POINTS} pts
+                </span>
+              </div>
+
+              <div className={`flex items-center justify-between text-[10px] pt-1 border-t border-slate-700/60`}>
+                <span className={`font-bold ${challengeStyle.text}`}>
+                  Max qualification
+                </span>
+
+                <span className={`font-mono font-black ${challengeStyle.text}`}>
+                  +{MOD_COMPLIANCE_POINTS + REQUIREMENT_ACHIEVEMENT_POINTS} pts
+                </span>
+              </div>
+
+            </div>
+
           </div>
         </div>
+      </div>
+    ) : (
+      <div className="bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2.5">
+        <span className="text-[11px] text-slate-600">
+          No challenge requirement set
+        </span>
+      </div>
+    )}
+
+    {/* Submission metadata */}
+    <div className="bg-slate-900/70 border border-slate-800 rounded-xl divide-y divide-slate-800/60">
+
+      <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+        <span className="text-[11px] text-slate-500">
+          Submitted by
+        </span>
+
+        <span className="text-[11px] font-bold text-slate-100 text-right">
+          {beatmap.submittedByName || '—'}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+        <span className="text-[11px] text-slate-500">
+          Map status
+        </span>
+
+        <span className="text-[11px] font-bold text-slate-100 text-right">
+          {beatmap.status || '—'}
+        </span>
+      </div>
+
+    </div>
+
+    {beatmap.description && (
+      <p className="text-[11px] text-slate-400 leading-snug px-1">
+        {beatmap.description}
+      </p>
+    )}
+
+  </div>
+
+  {/* Actions */}
+  <div className="p-3 border-t border-slate-800 flex gap-2 flex-shrink-0">
+
+    {showVoteButton && (
+      <button
+        type="button"
+        disabled={voteBlocked}
+        title={voteTitle}
+        aria-label={voteTitle}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (voteBlocked) return;
+          triggerSpin(onVote);
+        }}
+        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed ${
+          beatmap.isVoted
+            ? 'bg-emerald-600 text-white'
+            : 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+        }`}
+      >
+        {voteBusy
+          ? 'Voting…'
+          : beatmap.isVoted
+            ? <><CheckCircle2 className="w-3.5 h-3.5" /> Voted</>
+            : 'Vote'}
+      </button>
+    )}
+
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        triggerSpin(onFavorite);
+      }}
+      className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors ${
+        beatmap.isFavorited
+          ? 'bg-rose-500/20 border-rose-500/60 text-rose-400'
+          : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+      }`}
+    >
+      <Heart className={`w-3.5 h-3.5 ${beatmap.isFavorited ? 'fill-rose-500' : ''}`} />
+    </button>
+
+  </div>
+
+</div>
       </div>
     </div>
   );

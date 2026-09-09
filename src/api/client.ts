@@ -488,6 +488,23 @@ export interface ApiResultCorrection {
 }
 
 /**
+ * One message in the challenge-phase live chat.
+ *
+ * Scoped to one round. Never archived. Admins can delete any message.
+ */
+export interface ApiChatMessage {
+  id: number;
+  roundId: number;
+  userId: number;
+  username: string;
+  avatarUrl: string;
+  /** True when the author is an administrator — shown with a badge in the UI. */
+  isAdmin: boolean;
+  body: string;
+  createdAt: string;
+}
+
+/**
  * One comment on a submission (B8).
  *
  * parentId is the comment being replied to, or null for a top-level one. The panel renders a
@@ -699,6 +716,18 @@ export const api = {
       send<{ ok: boolean; imported: number; favorites: ApiFavorite[] }>("POST", "/favorites/import"),
   },
 
+  // ── Challenge chat ─────────────────────────────────────────────────────────
+  //
+  // Visible only during the challenge phase. Never archived.
+  // Admin delete lives under api.admin.deleteChatMessage.
+  chat: {
+    /** All messages for the open round's challenge chat. [] when not in challenge phase. */
+    list: () => get<ApiChatMessage[]>('/challenge/chat'),
+    /** Post a message. requireAuth. */
+    post: (body: string) =>
+      send<{ ok: boolean; message: ApiChatMessage }>('POST', '/challenge/chat', { body }),
+  },
+
   // ── Comments ───────────────────────────────────────────────────────────────
   comments: {
     /**
@@ -856,6 +885,9 @@ export const api = {
       get<ApiVoteAudit[]>(roundId === undefined ? "/admin/votes" : `/admin/votes?roundId=${roundId}`),
     /** Submission ids a tied round may be resolved to. */
     tiebreakEntries: () => get<number[]>("/admin/round/tiebreak"),
+    /** Deletes a challenge chat message. Admin only. */
+    deleteChatMessage: (id: number) =>
+      send<{ ok: boolean }>('DELETE', `/challenge/chat/${id}`),
     /**
      * Records or overrides a challenge score by hand, for a play the osu! API will
      * not give up or a correction. The player is named by osu! id.

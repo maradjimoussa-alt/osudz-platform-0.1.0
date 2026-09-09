@@ -9,7 +9,7 @@
 
 import { Router } from 'express';
 import type { Response } from 'express';
-import { requireAuth, requireCanChallenge } from '../middleware/auth.js';
+import { requireAuth, requireCanChallenge, requireAdmin } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { findById as findRound, findCurrent } from '../repo/rounds.js';
 import { findById as findSubmission } from '../repo/submissions.js';
@@ -22,6 +22,13 @@ import {
 } from '../repo/challengeScores.js';
 import { scoreRound, toRoundPlay } from '../repo/dzpp.js';
 import { ScoreNotFound, fetchUserScore } from '../services/osu.js';
+import {
+  findById as findChatMessage,
+  listForRound as listChatForRound,
+  post as postChatMessage,
+  remove as removeChatMessage,
+  toApiChatMessage,
+} from '../repo/challengeChat.js';
 
 const router = Router();
 
@@ -218,6 +225,83 @@ router.post('/scores', requireCanChallenge, importLimit, async (req, res) => {
     res.json({ ok: true, score: toApiChallengeScore(row, 0, null) });
   } catch (err) {
     fail(res, err, 'import score');
+  }
+});
+
+// ── Challenge chat ───────────────────────────────────────────────────────────
+//
+// GET  /api/challenge/chat      — public; [] when not in challenge phase
+// POST /api/challenge/chat      — requireAuth; rate-limited
+// DELETE /api/challenge/chat/:id — requireAdmin
+
+const MAX_CHAT_BODY = 500;
+const chatLimit = rateLimit({ limit: 60, windowMs: 60_000, what: 'chat messages' });
+
+router.get('/chat', async (_req, res) => {
+  try {
+    const open = await findCurrent();
+    if (!open || open.phase !== 'challenge') {
+      res.json([]);
+      return;
+    }
+    const rows = await listChatForRound(open.id);
+    res.json(rows.map(toApiChatMessage));
+  } catch (err) {
+    fail(res, err, 'chat read');
+  }
+});
+
+router.post('/chat', requireAuth, chatLimit, async (req, res) => {
+  const { body } = (req.body ?? {}) as Record<string, unknown>;
+
+  if (typeof body !== 'string' || body.trim() === '') {
+    res.status(400).json({ error: 'Write something first' });
+    return;
+  }
+  const text = body.trim();
+  if (text.length > MAX_CHAT_BODY) {
+    res.status(400).json({ error: `A message can be at most ${MAX_CHAT_BODY} characters` });
+    return;
+  }
+
+  try {
+    const open = await findCurrent();
+    if (!open) {
+      res.status(409).json({ error: 'No round is open' });
+      return;
+    }
+    if (open.phase !== 'challenge') {
+      res.status(409).json({ error: 'Chat is only available during the challenge phase' });
+      return;
+    }
+
+    const row = await postChatMessage({ roundId: open.id, userId: req.user!.id, body: text });
+    if (!row) {
+      res.status(503).json({ error: 'Could not save message' });
+      return;
+    }
+    res.json({ ok: true, message: toApiChatMessage(row) });
+  } catch (err) {
+    fail(res, err, 'chat post');
+  }
+});
+
+router.delete('/chat/:id', requireAdmin, async (req, res) => {
+  if (!/^\d+$/.test(req.params.id)) {
+    res.status(400).json({ error: 'Message id must be a positive integer' });
+    return;
+  }
+
+  try {
+    const msg = await findChatMessage(Number(req.params.id));
+    if (!msg) {
+      res.status(404).json({ error: 'Message not found' });
+      return;
+    }
+    const removed = await removeChatMessage(msg.id);
+    res.json({ ok: removed });
+  } catch (err) {
+    fail(res, err, 'chat delete');
   }
 });
 
